@@ -1,58 +1,60 @@
 from djitellopy import Tello
 import time
+current_coords = (0,0)
+def move_to_coordinates(coords, drone, x, y):
+    dist_to_change = (x-coords[0], y-coords[1])
+    print(dist_to_change)
+    dist_x = dist_to_change[0]*10
+    dist_y = dist_to_change[1]*10
+    if dist_x < 0:
+        if abs(dist_x) < 20:
+            dist_x = 20
+        drone.move_left(abs(dist_x))
+    elif dist_x == 0:
+        pass
+    else:
+        if abs(dist_x) < 20:
+            dist_x = 20
+        drone.move_right(abs(dist_x))
+    time.sleep(0.5)
+    if dist_y < 0:
+        if abs(dist_y)<20:
+            dist_y = 20
+        drone.move_back(abs(dist_y))
+    elif dist_y == 0:
+        pass
+    else:
+        if abs(dist_y)<20:
+            dist_y = 20
+        drone.move_forward(abs(dist_y))
+    time.sleep(0.5)
 
-# CONNECT TO TELLO
+
 myDrone = Tello()
 myDrone.connect()
-myDrone.for_back_velocity = 0
-myDrone.left_right_velocity = 0
-myDrone.up_down_velocity = 0
-myDrone.yaw_velocity = 0
-myDrone.speed = 0
+
 print(myDrone.get_battery())
-
-def move_to_coords(x, y):
-    velocity = 50
-
-    if x > 0:
-        myDrone.send_rc_control(velocity, 0, 0, 0)
-    else:
-        myDrone.send_rc_control(-velocity, 0, 0, 0)
-    time.sleep((abs(x) * 10) / velocity)
-    time.sleep(0.3)
-    print(f'Waited for {(abs(x)*10)/velocity} seconds')
-
-    myDrone.send_rc_control(0, 0, 0, 0)
-    
-    time.sleep(0.5)
-    if y > 0:
-        myDrone.send_rc_control(0, velocity, 0, 0)
-    else:
-        myDrone.send_rc_control(0, -velocity, 0, 0)
-    time.sleep((abs(y) * 10) / velocity)
-    time.sleep(0.3)
-    print(f'Waited for {(abs(y)*10)/velocity} seconds')
-
-    myDrone.send_rc_control(0, 0, 0, 0)
-
 
 myDrone.takeoff()
 
 while True:
-    inp = input('Land? (y/n): ')
-    if inp.lower() == 'y':
-        myDrone.land()
-        break
-
-    print('Next coordinates? (x y):')
     try:
-        next_coords_x, next_coords_y = map(int, input().split())
-        print(f'x:{next_coords_x}, y:{next_coords_y}')
-        move_to_coords(next_coords_x, next_coords_y)
+        # Input coordinates as space-separated integers
+        input_coords = input('Enter coordinates (x y): ')
+        if input_coords.lower() == 'end':
+            break
 
-        # Add a small delay before asking for the next coordinates
-        time.sleep(0.5)
+        x, y = map(int, input_coords.split())
+        print(f'Moving to coordinates: ({x}, {y})')
+        move_to_coordinates(current_coords, myDrone, x, y)
+        time.sleep(2)  # Pause before next input
+        current_coords = (x,y)
+        print(f'Current coords x:{current_coords[0]} y:{current_coords[1]}')
     except ValueError:
-        print('Invalid input. Please enter integer coordinates.')
+        print('Invalid input. Please enter space-separated integers.')
 
+myDrone.land()
 myDrone.end()
+
+#Enter coordinates (x y): -3 3
+#Enter coordinates (x y): -4 3
