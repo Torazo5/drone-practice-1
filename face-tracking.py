@@ -8,7 +8,6 @@ myDrone = intializeTello()
 while True:
     ## STEP 1
     img = telloGetFrame(myDrone,w,h)
-    
 
     img, info = findFace(img)
     pError = trackFace(myDrone,c,w,pid,pError)
